@@ -10,13 +10,14 @@ const outputPath = path.join(OUTPUT_DIR, "team.html");
 
 const render = require("./lib/htmlRenderer");
 const { inherits } = require("util");
-const employees = [];
-let keepGoing = true;
+const employees = []; //define array for holding employee objects
+let keepGoing = true; // flag used in loop, Initially set to true
 
 
 // Write code to use inquirer to gather information about the development team members,
 // and to create objects for each team member (using the correct classes as blueprints!)
 
+// Question to ask for Manager
 const managerQuestions = [{
     type: "input",
     message: "What is your Manager's name?",
@@ -39,6 +40,7 @@ const managerQuestions = [{
   }
   ];
 
+// Quesitons to ask for Engineers
   const engineerQuestions = [{
     type: "input",
     message: "What is your Engineer's name?",
@@ -61,6 +63,7 @@ const managerQuestions = [{
   }
   ];
 
+// Questions to ask for Interns
   const internQuestions = [{
     type: "input",
     message: "What is your Intern's name?",
@@ -83,6 +86,7 @@ const managerQuestions = [{
   }
   ];
 
+// Questions to ask if the user for their next choice
   const nextQuestions = [{
     type: "list",
     message: "Which type of team member would you like to add?",
@@ -95,34 +99,36 @@ const managerQuestions = [{
   }
   ];
 
+// Set the Mmain funciton to asynchronous so teh await command can be used
 async function main() {
-  console.log("Please build your team")
-  let answers = await inquirer.prompt(managerQuestions)
+  console.log("Please build your team") // Initial statement to build team
+  let answers = await inquirer.prompt(managerQuestions) // Ask for the manager data
+  // Create Manager onject and then add it to the employee array
   let manager = new Manager(answers.managerName, answers.managerID, answers.managerEmail, answers.managerOfficeNumber)
   employees.push(manager) 
   
-  if(answers.nextChoice === "I don't want to add any more team members"){
-    keepGoing = false;
-  }
-
+  // Start the loop for all other Engineers and Interns
   while (keepGoing == true){
+    // Ask user for Engineer, Intenr or done
     let answer = await inquirer.prompt(nextQuestions)
   
+    // Based upon their answer, select the right path
     switch(answer.nextChoice) {
       case "Engineer":
+          // Ask Engineer Questions and then create an Engineer Object and push it onto the employees array
           let ansEngineer = await inquirer.prompt(engineerQuestions)
           let engineer = new Engineer(ansEngineer.engineerName, ansEngineer.engineerID, ansEngineer.engineerEmail, ansEngineer.engineerGitHubID)
-          employees.push(engineer) 
-        keepGoing = true
+          employees.push(engineer)
         break;
       case "Intern":
+          // Ask Intern Questions and then create an Intern Object and push it onto the employees array
           let ansIntern = await inquirer.prompt(internQuestions)
           let intern = new Intern(ansIntern.internName, ansIntern.internID, ansIntern.internEmail, ansIntern.internSchool)
           employees.push(intern) 
-        keepGoing = true
         break;
       default:
-        console.log("End")
+        // This selection is when the user selects to end the team definition.  As a result, set keepGoing to false and end the Data Gathering
+        console.log("End Data Gathering")
         keepGoing = false
     }
   }
@@ -130,7 +136,6 @@ async function main() {
 // After the user has input all employees desired, call the `render` function (required
 // above) and pass in an array containing all employee objects; the `render` function will
 // generate and return a block of HTML including templated divs for each employee!
-console.log(employees)
 
 const htmlOutput = render(employees)
 
@@ -140,21 +145,24 @@ const htmlOutput = render(employees)
 // Hint: you may need to check if the `output` folder exists and create it if it
 // does not.
 
-  if (!fs.existsSync(OUTPUT_DIR)){
-    fs.mkdirSync(OUTPUT_DIR);
-  }
+// Check to see if the output directoty exists.  If it does not, create it
+if (!fs.existsSync(OUTPUT_DIR)){
+  fs.mkdirSync(OUTPUT_DIR);
+}
 
-  try {
-    if (fs.existsSync(OUTPUT_DIR)) {
-      fs.writeFile(outputPath, htmlOutput, function (err){
-        if (err) throw err
-      })
-    }
-  } catch(err) {
-    console.error(err)
+// Write the output HTML file to the output file
+try {
+  if (fs.existsSync(OUTPUT_DIR)) {
+    fs.writeFile(outputPath, htmlOutput, function (err){
+      if (err) throw err
+    })
   }
+} catch(err) {
+  console.error(err)
+}
 
 }
 
+// Call main to kickoff the program
 main()
 
